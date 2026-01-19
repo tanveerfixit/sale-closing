@@ -26,42 +26,59 @@
     </script>
 
     <!-- PRINT SETTINGS -->
-    <style>
-        @media print {
-            body { 
-                background: white !important;
-                padding: 0 !important;
-            }
-            .print-hidden { 
-                display: none !important; 
-            }
-            #receipt-output { 
-                display: block !important;
-                width: 100% !important;
-                font-family: 'Courier Prime', monospace;
-                color: black;
-                padding: 10px;
-                border: none !important;
-            }
-            .app-container {
-                box-shadow: none !important;
-                border: none !important;
-                margin: 0 !important;
-                width: 100% !important;
-            }
+ <style>
+    @media print {
+        body { 
+            background: white !important;
+            padding: 0 !important;
         }
-        #receipt-output {
-            display: none;
+        .print-hidden { 
+            display: none !important; 
         }
-        .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.5);
+        #receipt-output { 
+            display: block !important;
+            width: 100% !important;
+            font-family: 'Courier Prime', monospace;
+            color: black;
+            padding: 2px; /* Reduced from 6px */
+            border: none !important;
+            font-size: 15px; /* Slightly smaller font */
+            line-height: 1.2; /* Tighter line spacing */
         }
-        /* Custom Checkbox Style */
-        .custom-checkbox:checked {
-            background-color: #0d9488;
-            border-color: #0d9488;
+        .app-container {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            width: 100% !important;
         }
-    </style>
+        
+        /* Tighter receipt spacing */
+        #receipt-output table tr td {
+            padding: 2px 0 !important; /* Reduced from 5px 0 */
+        }
+        #receipt-output div {
+            margin-top: 8px !important; /* Reduced margins */
+            padding-top: 4px !important; /* Reduced padding */
+        }
+        #receipt-output h2 {
+            margin-bottom: 4px !important;
+        }
+        #receipt-output p {
+            margin: 2px 0 !important;
+        }
+    }
+    #receipt-output {
+        display: none;
+    }
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    /* Custom Checkbox Style */
+    .custom-checkbox:checked {
+        background-color: #0d9488;
+        border-color: #0d9488;
+    }
+</style>
 </head>
 <body class="bg-bg-light font-sans min-h-screen p-4 md:p-8 flex flex-col items-center">
 
