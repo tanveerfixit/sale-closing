@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Sales Closure</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Courier Prime', 'monospace']
+                    },
+                    colors: {
+                        'primary-teal': '#0d9488',
+                        'secondary-amber': '#f59e0b',
+                        'bg-light': '#f0fdfa',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- PRINT SETTINGS -->
+    <style>
+        @media print {
+            body { 
+                background: white !important;
+                padding: 0 !important;
+            }
+            .print-hidden { 
+                display: none !important; 
+            }
+            #receipt-output { 
+                display: block !important;
+                width: 100% !important;
+                font-family: 'Courier Prime', monospace;
+                color: black;
+                padding: 10px;
+                border: none !important;
+            }
+            .app-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+        }
+        #receipt-output {
+            display: none;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        /* Custom Checkbox Style */
+        .custom-checkbox:checked {
+            background-color: #0d9488;
+            border-color: #0d9488;
+        }
+    </style>
+</head>
+<body class="bg-bg-light font-sans min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <div class="w-full max-w-md bg-white p-6 rounded-2xl shadow-xl border border-teal-100 app-container relative">
+        <header class="print-hidden">
+            <h1 class="text-2xl font-extrabold text-primary-teal text-center mb-1">
+                Daily Sales Closure
+            </h1>
+            <div id="saleDateDisplay" class="text-center text-xs font-bold text-teal-600 tracking-widest uppercase mb-6 italic">
+                <!-- Date inserted via JS -->
+            </div>
+        </header>
+
+        <!-- Main Form -->
+        <form id="closingForm" class="space-y-5 print-hidden">
+            <div class="grid grid-cols-1 gap-4">
+                <div class="relative">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Cash Sale (€)</label>
+                    <input type="number" id="cashSale" step="0.01" value="0.00"
+                           class="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-primary-teal focus:ring-0 outline-none transition-all text-right text-lg font-semibold">
+                </div>
+
+                <div class="relative">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Card BOI (€)</label>
+                    <input type="number" id="cardBOI" step="0.01" value="0.00"
+                           class="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-primary-teal focus:ring-0 outline-none transition-all text-right text-lg font-semibold">
+                </div>
+
+                <div class="relative">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Card Fixed (€)</label>
+                    <input type="number" id="cardFixed" step="0.01" value="0.00"
+                           class="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-primary-teal focus:ring-0 outline-none transition-all text-right text-lg font-semibold">
+                </div>
+            </div>
+
+            <div class="bg-secondary-amber/5 border-2 border-dashed border-secondary-amber/30 rounded-xl p-4">
+                <label class="block text-xs font-bold text-secondary-amber uppercase mb-1">Total Sale (€)</label>
+                <p id="totalSaleDisplay" class="text-3xl font-black text-right text-secondary-amber">0.00</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Responsible Staff</label>
+                <div class="flex gap-2">
+                    <div id="selectedStaffDisplay" class="flex-1 p-4 border-2 border-gray-100 rounded-xl bg-gray-50 font-medium text-gray-700 min-h-[58px] flex items-center">
+                        No staff selected
+                    </div>
+                    <button type="button" id="openSettingsBtn" class="p-4 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors" title="Staff Settings">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                <button type="button" id="saveBtn" class="flex-1 py-4 bg-primary-teal hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95">
+                    Save Sale
+                </button>
+                <button type="button" id="printBtn" class="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95">
+                    Print Slip
+                </button>
+            </div>
+
+            <div id="statusMsg" class="text-center text-sm font-medium h-4"></div>
+        </form>
+
+        <!-- Hidden Receipt View for Printing -->
+        <div id="receipt-output">
+            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                <h2 style="font-size: 18px; margin: 0;">DAILY SALES REPORT</h2>
+                <p id="print-date" style="margin: 5px 0 0 0;"></p>
+            </div>
+            <table style="width: 100%; font-size: 14px;">
+                <tr><td style="padding: 5px 0;">Cash Sale:</td><td id="print-cash" style="text-align: right;"></td></tr>
+                <tr><td style="padding: 5px 0;">Card BOI:</td><td id="print-boi" style="text-align: right;"></td></tr>
+                <tr><td style="padding: 5px 0;">Card Fixed:</td><td id="print-fixed" style="text-align: right;"></td></tr>
+                <tr style="font-weight: bold; border-top: 1px solid #000;">
+                    <td style="padding: 10px 0;">TOTAL:</td>
+                    <td id="print-total" style="text-align: right; padding: 10px 0;"></td>
+                </tr>
+            </table>
+            <div style="margin-top: 20px; padding-top: 10px; border-top: 1px dashed #000;">
+                <p>Staff: <span id="print-staff"></span></p>
+                <p style="margin-top: 20px; text-align: center; font-size: 10px;">--- End of Report ---</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 modal-backdrop hidden flex items-center justify-center p-4 z-50 print-hidden">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 overflow-hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Select Staff</h2>
+                <button id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Check to select staff</label>
+                    <div id="staffChecklist" class="max-h-60 overflow-y-auto border rounded-xl divide-y">
+                        <!-- Staff checkboxes populated via JS -->
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Manage Names</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="newStaffInput" placeholder="New Name..." class="flex-1 p-3 border rounded-lg outline-none focus:border-primary-teal text-sm">
+                        <button id="addStaffBtn" class="bg-primary-teal text-white px-4 py-2 rounded-lg font-bold text-sm">Add</button>
+                    </div>
+                </div>
+                
+                <button id="doneBtn" class="w-full py-3 bg-primary-teal text-white rounded-xl font-bold shadow-md">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cashInput = document.getElementById('cashSale');
+        const boiInput = document.getElementById('cardBOI');
+        const fixedInput = document.getElementById('cardFixed');
+        const totalDisplay = document.getElementById('totalSaleDisplay');
+        const dateDisplay = document.getElementById('saleDateDisplay');
+        const selectedStaffDisplay = document.getElementById('selectedStaffDisplay');
+        const statusMsg = document.getElementById('statusMsg');
+
+        // Staff Settings Elements
+        const settingsModal = document.getElementById('settingsModal');
+        const openSettingsBtn = document.getElementById('openSettingsBtn');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const addStaffBtn = document.getElementById('addStaffBtn');
+        const doneBtn = document.getElementById('doneBtn');
+        const newStaffInput = document.getElementById('newStaffInput');
+        const staffChecklist = document.getElementById('staffChecklist');
+
+        // State
+        let staffDatabase = JSON.parse(localStorage.getItem('staff_db')) || ["Tanveer", "Rutvik", "Chirag"];
+        let selectedStaffIds = JSON.parse(localStorage.getItem('selected_staff_ids')) || [];
+
+        // Initial Setup
+        function initApp() {
+            renderStaffChecklist();
+            updateStaffDisplay();
+            calculateTotal();
+            
+            const now = new Date();
+            dateDisplay.innerText = now.toLocaleDateString('en-IE', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        // Render Checklist in Modal
+        function renderStaffChecklist() {
+            staffChecklist.innerHTML = '';
+            staffDatabase.forEach((name, index) => {
+                const label = document.createElement('label');
+                label.className = "flex justify-between items-center p-4 hover:bg-teal-50 cursor-pointer transition-colors group";
+                
+                const leftPart = document.createElement('div');
+                leftPart.className = "flex items-center gap-3";
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = "checkbox";
+                checkbox.className = "w-5 h-5 accent-primary-teal custom-checkbox";
+                checkbox.checked = selectedStaffIds.includes(name);
+                checkbox.onchange = () => toggleStaffSelection(name);
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = "font-semibold text-gray-700";
+                nameSpan.textContent = name;
+                
+                leftPart.appendChild(checkbox);
+                leftPart.appendChild(nameSpan);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>';
+                deleteBtn.className = "text-gray-300 hover:text-red-500 p-2 transition-colors";
+                deleteBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeStaffFromDb(name);
+                };
+
+                label.appendChild(leftPart);
+                label.appendChild(deleteBtn);
+                staffChecklist.appendChild(label);
+            });
+        }
+
+        function toggleStaffSelection(name) {
+            const index = selectedStaffIds.indexOf(name);
+            if (index > -1) {
+                selectedStaffIds.splice(index, 1);
+            } else {
+                selectedStaffIds.push(name);
+            }
+            localStorage.setItem('selected_staff_ids', JSON.stringify(selectedStaffIds));
+            updateStaffDisplay();
+        }
+
+        function updateStaffDisplay() {
+            if (selectedStaffIds.length === 0) {
+                selectedStaffDisplay.textContent = "No staff selected";
+                selectedStaffDisplay.classList.add('text-gray-400');
+            } else {
+                selectedStaffDisplay.textContent = selectedStaffIds.join(" & ");
+                selectedStaffDisplay.classList.remove('text-gray-400');
+            }
+        }
+
+        function removeStaffFromDb(name) {
+            staffDatabase = staffDatabase.filter(s => s !== name);
+            selectedStaffIds = selectedStaffIds.filter(s => s !== name);
+            saveDb();
+        }
+
+        addStaffBtn.onclick = () => {
+            const val = newStaffInput.value.trim();
+            if (val && !staffDatabase.includes(val)) {
+                staffDatabase.push(val);
+                newStaffInput.value = '';
+                saveDb();
+            }
+        };
+
+        function saveDb() {
+            localStorage.setItem('staff_db', JSON.stringify(staffDatabase));
+            localStorage.setItem('selected_staff_ids', JSON.stringify(selectedStaffIds));
+            renderStaffChecklist();
+            updateStaffDisplay();
+        }
+
+        // Modal Controls
+        openSettingsBtn.onclick = () => settingsModal.classList.remove('hidden');
+        closeSettingsBtn.onclick = () => settingsModal.classList.add('hidden');
+        doneBtn.onclick = () => settingsModal.classList.add('hidden');
+        window.onclick = (e) => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); };
+
+        // Auto-calculate Total
+        function calculateTotal() {
+            const cash = parseFloat(cashInput.value) || 0;
+            const boi = parseFloat(boiInput.value) || 0;
+            const fixed = parseFloat(fixedInput.value) || 0;
+            const total = cash + boi + fixed;
+            totalDisplay.innerText = total.toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return total;
+        }
+
+        [cashInput, boiInput, fixedInput].forEach(input => {
+            input.addEventListener('input', calculateTotal);
+            input.addEventListener('focus', (e) => e.target.select());
+        });
+
+        // Save Functionality
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            if (selectedStaffIds.length === 0) {
+                showStatus("Please select at least one staff member", "text-red-500");
+                return;
+            }
+            showStatus("Sale Saved Locally", "text-green-600");
+            setTimeout(() => { statusMsg.innerText = ""; }, 3000);
+        });
+
+        // Print Functionality
+        document.getElementById('printBtn').addEventListener('click', () => {
+            if (selectedStaffIds.length === 0) {
+                showStatus("Select staff before printing", "text-red-500");
+                openSettingsBtn.click();
+                return;
+            }
+
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-IE', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            document.getElementById('print-date').innerText = formattedDate;
+            document.getElementById('print-cash').innerText = `€${parseFloat(cashInput.value).toFixed(2)}`;
+            document.getElementById('print-boi').innerText = `€${parseFloat(boiInput.value).toFixed(2)}`;
+            document.getElementById('print-fixed').innerText = `€${parseFloat(fixedInput.value).toFixed(2)}`;
+            document.getElementById('print-total').innerText = `€${calculateTotal().toFixed(2)}`;
+            document.getElementById('print-staff').innerText = selectedStaffIds.join(" & ");
+
+            window.print();
+        });
+
+        function showStatus(msg, colorClass) {
+            statusMsg.innerText = msg;
+            statusMsg.className = `text-center text-sm font-medium ${colorClass}`;
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
