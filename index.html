@@ -26,64 +26,89 @@
     </script>
 
     <!-- PRINT SETTINGS -->
- <style>
-    @media print {
-        body { 
-            background: white !important;
-            padding: 0 !important;
+    <style>
+        @media print {
+            body { 
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .print-hidden { 
+                display: none !important; 
+            }
+            #receipt-output { 
+                display: block !important;
+                width: 100% !important;
+                font-family: 'Courier Prime', monospace;
+                color: black;
+                padding: 5px;
+                margin: 0;
+                border: none !important;
+                line-height: 1.2;
+            }
+            #receipt-output table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            /* Increased font sizes for readability */
+            #receipt-output td {
+                padding: 4px 0 !important;
+                font-size: 16px; /* Larger base font for items */
+            }
+            #receipt-output .shop-title {
+                font-size: 18px !important;
+                margin-bottom: 4px !important;
+            }
+            #receipt-output .report-title {
+                font-size: 20px !important;
+                margin: 4px 0 !important;
+            }
+            #receipt-output .date-text {
+                font-size: 14px !important;
+            }
+            #receipt-output .total-row td {
+                font-size: 18px !important;
+                padding: 10px 0 !important;
+            }
+            #receipt-output .staff-text {
+                font-size: 16px !important;
+                margin-top: 10px !important;
+            }
+            .app-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
         }
-        .print-hidden { 
-            display: none !important; 
+        #receipt-output {
+            display: none;
         }
-        #receipt-output { 
-            display: block !important;
-            width: 100% !important;
-            font-family: 'Courier Prime', monospace;
-            color: black;
-            padding: 2px; /* Reduced from 6px */
-            border: none !important;
-            font-size: 15px; /* Slightly smaller font */
-            line-height: 1.2; /* Tighter line spacing */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
         }
-        .app-container {
-            box-shadow: none !important;
-            border: none !important;
-            margin: 0 !important;
-            width: 100% !important;
+        /* Custom Checkbox Style */
+        .custom-checkbox:checked {
+            background-color: #0d9488;
+            border-color: #0d9488;
         }
-        
-        /* Tighter receipt spacing */
-        #receipt-output table tr td {
-            padding: 2px 0 !important; /* Reduced from 5px 0 */
-        }
-        #receipt-output div {
-            margin-top: 8px !important; /* Reduced margins */
-            padding-top: 4px !important; /* Reduced padding */
-        }
-        #receipt-output h2 {
-            margin-bottom: 4px !important;
-        }
-        #receipt-output p {
-            margin: 2px 0 !important;
-        }
-    }
-    #receipt-output {
-        display: none;
-    }
-    .modal-backdrop {
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-    /* Custom Checkbox Style */
-    .custom-checkbox:checked {
-        background-color: #0d9488;
-        border-color: #0d9488;
-    }
-</style>
+    </style>
 </head>
 <body class="bg-bg-light font-sans min-h-screen p-4 md:p-8 flex flex-col items-center">
 
     <div class="w-full max-w-md bg-white p-6 rounded-2xl shadow-xl border border-teal-100 app-container relative">
         <header class="print-hidden">
+            <!-- Shop Header -->
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <h2 id="currentShopName" class="text-lg font-bold text-gray-700 tracking-tight">iPear Parnell St</h2>
+                <button type="button" id="openShopSettingsBtn" class="text-gray-400 hover:text-primary-teal transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
             <h1 class="text-2xl font-extrabold text-primary-teal text-center mb-1">
                 Daily Sales Closure
             </h1>
@@ -147,27 +172,28 @@
 
         <!-- Hidden Receipt View for Printing -->
         <div id="receipt-output">
-            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-                <h2 style="font-size: 18px; margin: 0;">DAILY SALES REPORT</h2>
-                <p id="print-date" style="margin: 5px 0 0 0;"></p>
+            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
+                <h2 id="print-shop-name" class="shop-title" style="margin: 0; text-transform: uppercase; font-weight: bold;">IPEAR PARNELL ST</h2>
+                <h3 class="report-title" style="font-weight: bold;">DAILY SALES REPORT</h3>
+                <p id="print-date" class="date-text" style="margin: 2px 0 0 0;"></p>
             </div>
-            <table style="width: 100%; font-size: 14px;">
-                <tr><td style="padding: 5px 0;">Cash Sale:</td><td id="print-cash" style="text-align: right;"></td></tr>
-                <tr><td style="padding: 5px 0;">Card BOI:</td><td id="print-boi" style="text-align: right;"></td></tr>
-                <tr><td style="padding: 5px 0;">Card Fixed:</td><td id="print-fixed" style="text-align: right;"></td></tr>
-                <tr style="font-weight: bold; border-top: 1px solid #000;">
-                    <td style="padding: 10px 0;">TOTAL:</td>
-                    <td id="print-total" style="text-align: right; padding: 10px 0;"></td>
+            <table style="width: 100%;">
+                <tr><td style="font-weight: bold;">Cash Sale:</td><td id="print-cash" style="text-align: right;"></td></tr>
+                <tr><td style="font-weight: bold;">Card BOI:</td><td id="print-boi" style="text-align: right;"></td></tr>
+                <tr><td style="font-weight: bold;">Card Fixed:</td><td id="print-fixed" style="text-align: right;"></td></tr>
+                <tr class="total-row" style="font-weight: bold; border-top: 2px solid #000; border-bottom: 2px solid #000;">
+                    <td>TOTAL:</td>
+                    <td id="print-total" style="text-align: right;"></td>
                 </tr>
             </table>
-            <div style="margin-top: 20px; padding-top: 10px; border-top: 1px dashed #000;">
-                <p>Staff: <span id="print-staff"></span></p>
-                <p style="margin-top: 20px; text-align: center; font-size: 10px;">--- End of Report ---</p>
+            <div class="staff-text" style="border-top: 1px dashed #000; padding-top: 8px;">
+                <p>Staff: <span id="print-staff" style="font-weight: bold;"></span></p>
+                <p style="margin-top: 25px; text-align: center; font-size: 12px; letter-spacing: 2px;">*** END OF REPORT ***</p>
             </div>
         </div>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- Staff Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 modal-backdrop hidden flex items-center justify-center p-4 z-50 print-hidden">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 overflow-hidden">
             <div class="flex justify-between items-center mb-4">
@@ -200,6 +226,23 @@
         </div>
     </div>
 
+    <!-- Shop Settings Modal -->
+    <div id="shopModal" class="fixed inset-0 modal-backdrop hidden flex items-center justify-center p-4 z-[60] print-hidden">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Select Shop</h2>
+                <button id="closeShopModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="shopList" class="space-y-2">
+                <!-- Shop names populated via JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const cashInput = document.getElementById('cashSale');
         const boiInput = document.getElementById('cardBOI');
@@ -207,6 +250,7 @@
         const totalDisplay = document.getElementById('totalSaleDisplay');
         const dateDisplay = document.getElementById('saleDateDisplay');
         const selectedStaffDisplay = document.getElementById('selectedStaffDisplay');
+        const currentShopNameDisplay = document.getElementById('currentShopName');
         const statusMsg = document.getElementById('statusMsg');
 
         // Staff Settings Elements
@@ -218,14 +262,31 @@
         const newStaffInput = document.getElementById('newStaffInput');
         const staffChecklist = document.getElementById('staffChecklist');
 
+        // Shop Settings Elements
+        const shopModal = document.getElementById('shopModal');
+        const openShopSettingsBtn = document.getElementById('openShopSettingsBtn');
+        const closeShopModalBtn = document.getElementById('closeShopModalBtn');
+        const shopListContainer = document.getElementById('shopList');
+
         // State
         let staffDatabase = JSON.parse(localStorage.getItem('staff_db')) || ["Tanveer", "Rutvik", "Chirag"];
         let selectedStaffIds = JSON.parse(localStorage.getItem('selected_staff_ids')) || [];
+        
+        const shopOptions = [
+            "iPear Parnell St",
+            "Phonelab Ennis",
+            "iPear Tesco",
+            "Gort Bridge St",
+            "Phone Shop Loughrea"
+        ];
+        let currentShop = localStorage.getItem('selected_shop_name') || shopOptions[0];
 
         // Initial Setup
         function initApp() {
             renderStaffChecklist();
             updateStaffDisplay();
+            renderShopList();
+            updateShopDisplay();
             calculateTotal();
             
             const now = new Date();
@@ -235,6 +296,30 @@
                 month: 'long', 
                 day: 'numeric' 
             });
+        }
+
+        // Shop Management
+        function renderShopList() {
+            shopListContainer.innerHTML = '';
+            shopOptions.forEach(shop => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all font-semibold ${shop === currentShop ? 'border-primary-teal bg-teal-50 text-primary-teal' : 'border-gray-100 hover:border-teal-200'}`;
+                btn.textContent = shop;
+                btn.onclick = () => selectShop(shop);
+                shopListContainer.appendChild(btn);
+            });
+        }
+
+        function selectShop(name) {
+            currentShop = name;
+            localStorage.setItem('selected_shop_name', name);
+            updateShopDisplay();
+            renderShopList();
+            shopModal.classList.add('hidden');
+        }
+
+        function updateShopDisplay() {
+            currentShopNameDisplay.textContent = currentShop;
         }
 
         // Render Checklist in Modal
@@ -322,7 +407,14 @@
         openSettingsBtn.onclick = () => settingsModal.classList.remove('hidden');
         closeSettingsBtn.onclick = () => settingsModal.classList.add('hidden');
         doneBtn.onclick = () => settingsModal.classList.add('hidden');
-        window.onclick = (e) => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); };
+        
+        openShopSettingsBtn.onclick = () => shopModal.classList.remove('hidden');
+        closeShopModalBtn.onclick = () => shopModal.classList.add('hidden');
+
+        window.onclick = (e) => { 
+            if (e.target === settingsModal) settingsModal.classList.add('hidden'); 
+            if (e.target === shopModal) shopModal.classList.add('hidden');
+        };
 
         // Auto-calculate Total
         function calculateTotal() {
@@ -365,10 +457,11 @@
                 day: 'numeric' 
             });
 
+            document.getElementById('print-shop-name').innerText = currentShop;
             document.getElementById('print-date').innerText = formattedDate;
             document.getElementById('print-cash').innerText = `€${parseFloat(cashInput.value).toFixed(2)}`;
             document.getElementById('print-boi').innerText = `€${parseFloat(boiInput.value).toFixed(2)}`;
-            document.getElementById('print-fixed').innerText = `€${parseFloat(fixedInput.value).toFixed(2)}`;
+            document.getElementById('print-fixed').innerText = `€${parseFloat(cardFixed.value).toFixed(2)}`; // Fixed variable reference
             document.getElementById('print-total').innerText = `€${calculateTotal().toFixed(2)}`;
             document.getElementById('print-staff').innerText = selectedStaffIds.join(" & ");
 
